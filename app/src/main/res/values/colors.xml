@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/colorOrangeLightAccent</color>
+    <color name="colorPrimaryDark">@color/colorOrangeAccent</color>
+    <color name="colorAccent">@color/colorLightGrey</color>
+
+
+    <color name="colorBlack">#000000</color>
+    <color name="colorWhite">#FFFFFF</color>
+
+    <color name="colorCloudGrey">#78909c</color>
+    <color name="colorLightGrey">#ECEFF1</color>
+    <color name="colorDarkGrey">#424242</color>
+    <color name="colorYellowAccent">#FFCA28</color>
+    <color name="colorOrangeAccent">#FFA726</color>
+    <color name="colorOrangeLightAccent">#FFB74D</color>
+
+
+</resources>
