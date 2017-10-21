@@ -1,5 +1,6 @@
 package com.paramv.sunbreak;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -35,5 +36,28 @@ public class ThreeHourForecastData {
 
     public double snowVolume; // snow volume last three hours
 
-    public Date dateTime; // datetime of calculation
+    public Date startTime;
+
+    public Date endTime; // endTime of calculation
+
+
+    private static SimpleDateFormat timeFormatter = new SimpleDateFormat("h:mm aa");
+    private static SimpleDateFormat dateFormatter = new SimpleDateFormat("EEEE, MMMM dd'th'");
+
+
+    public String getReadableTime() {
+        return timeFormatter.format(startTime) + " to " + timeFormatter.format(endTime);
+    }
+
+    public String getReadableDate() {
+        return dateFormatter.format((endTime));
+    }
+
+    public String getReadableTempRange() {
+        return kelvinToFarenheit(temp) + "°";
+    }
+
+    private double kelvinToFarenheit(double k) {
+        return Math.round(k * 9 / 5 - 459.67);
+    }
 }

@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     public static final String API_KEY = "9cbb051e9228df0d24df5c8c675e2edc";
     public static final String OPEN_WEATHER_FORECAST_URL= "http://api.openweathermap.org/data/2.5/forecast";
-    public static final int NUM_DAYS_MAX = 5;
+    public static final int NUM_DAYS_MAX = 2;
 
     // Location provider
     private FusedLocationProviderClient mFusedLocationClient;
@@ -49,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     // Weather data, hourly
     List<ThreeHourForecastData> hourlyForecastData;
 
+    // Handy Views to keep hold of
+    AppBarLayout appBar;
     RecyclerView mDataRecyclerView;
     LinearLayoutManager mLinearLayoutManager;
     WeatherListAdapter mAdapter;
@@ -62,14 +66,42 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        // get location services client
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // create a new request queue
         queue = Volley.newRequestQueue(this);
+
+        // initialize list of forecast data
         hourlyForecastData = new LinkedList<ThreeHourForecastData>();
 
+        // set up recycler view and adapter
         mDataRecyclerView = (RecyclerView) findViewById(R.id.weatherContainer);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mDataRecyclerView.setLayoutManager(mLinearLayoutManager);
+
+        // get the collapsing toolbar pointer
+        final CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing);
+
+        // get the appBar pointer
+        appBar = (AppBarLayout) findViewById(R.id.main_appbar);
+        appBar.addOnOffsetChangedListener(new AppBarStateChangeListener() {
+            @Override
+            public void onExpanded(AppBarLayout appBarLayout) {
+                if(hourlyForecastData.size() == 0) { getLocationAndPopulateList(); }
+                collapsingToolbarLayout.setTitle(" ");
+            }
+
+            @Override
+            public void onCollapsed(AppBarLayout appBarLayout) {
+                collapsingToolbarLayout.setTitle("Sunbreak");
+            }
+
+            @Override
+            public void onIdle(AppBarLayout appBarLayout) {
+
+            }
+        });
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -80,8 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 getLocationAndPopulateList();
 
                 // 1. If view is swiped down, swipe it up.
-
-
+                appBar.setExpanded(false);
             }
         });
     }
@@ -123,15 +154,21 @@ public class MainActivity extends AppCompatActivity {
 
                     Date limitDate = getLimitDate();
 
+                    if(numEntries > 0) {
+                        hourlyForecastData.clear();
+                    }
+
                     for(int i = 0; i < numEntries; i++) {
                         // Get the hourly data
                         JSONObject hourObj = list.getJSONObject(i);
                         ThreeHourForecastData hourData = new ThreeHourForecastData();
 
-                        hourData.dateTime = new Date((long)hourObj.getInt("dt") * 1000);
+
+                        hourData.endTime = new Date((long)hourObj.getInt("dt") * 1000);
+                        hourData.startTime = new Date(hourData.endTime.getTime() - 3 * 3600 * 1000);
 
                         // we only care about the next n days. ignore the rest
-                        if(hourData.dateTime.after(limitDate)) continue;
+                        if(hourData.endTime.after(limitDate)) continue;
 
                         // Get main data
                         JSONObject mainData = hourObj.getJSONObject("main");
@@ -150,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject cloudData = hourObj.getJSONObject("clouds");
                         hourData.cloudCover = cloudData.getInt("all");
 
-                        Log.d(TAG, "At " + hourData.dateTime.toString() + " weather is " + hourData.weatherStringMain);
+                        Log.d(TAG, "At " + hourData.endTime.toString() + " weather is " + hourData.weatherStringMain);
                         hourlyForecastData.add(hourData);
                     }
 

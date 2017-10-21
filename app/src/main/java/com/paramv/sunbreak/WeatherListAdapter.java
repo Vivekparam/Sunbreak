@@ -27,29 +27,42 @@ public class WeatherListAdapter extends RecyclerView.Adapter<WeatherListAdapter.
 
         private static final String FORECAST_KEY = "FORECAST";
 
+        View rootView;
+
         View mCloudPercentIndicatorView;
         TextView mTimeView;
+        TextView mCloudCoverPercentTextView;
 
         public ForecastDataHolder(View v) {
             super(v);
 
+            rootView = v;
             mCloudPercentIndicatorView = v.findViewById(R.id.cloudPercentIndicator);
             mTimeView = (TextView) v.findViewById(R.id.time);
+            mCloudCoverPercentTextView = (TextView) v.findViewById(R.id.cloudCoverPercentText);
 
             v.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            Log.d(TAG, mTimeView.getText() +  "Clicked");
+            Log.d(TAG, mTimeView.getText() +  " Clicked");
+
+            WeatherInfoDialogFragment bottomSheet = new WeatherInfoDialogFragment();
+            bottomSheet.setData((ThreeHourForecastData)v.getTag());
+            bottomSheet.show(((MainActivity)v.getContext()).getSupportFragmentManager(),
+                    WeatherInfoDialogFragment.TAG);
+
         }
 
         public void bindForecast(ThreeHourForecastData data) {
             ((LinearLayout.LayoutParams) mCloudPercentIndicatorView.getLayoutParams()).weight = data.cloudCover;
 
-
+            rootView.setTag(data);
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a");
-            mTimeView.setText(sdf.format(data.dateTime));
+            mTimeView.setText(sdf.format(data.endTime));
+
+            mCloudCoverPercentTextView.setText("Cloud Cover: " + data.cloudCover + "%");
 
             if (data.cloudCover < 35) {
                 mCloudPercentIndicatorView.setBackground(ContextCompat.getDrawable(mCloudPercentIndicatorView.getContext(), R.drawable.layout_cloudbar_sunny_bg));
